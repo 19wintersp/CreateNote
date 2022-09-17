@@ -24,6 +24,7 @@ typedef struct {
 
 	char* date_fmt;
 	bool overwrite;
+	int time_offset;
 } Options;
 typedef char* Arg[2];
 
@@ -122,6 +123,7 @@ int main(int argc, char* argv[]) {
 		.outputs = NULL,
 		.date_fmt = "%Y-%m-%d",
 		.overwrite = false,
+		.time_offset = 0
 	};
 
 	struct {
@@ -133,7 +135,8 @@ int main(int argc, char* argv[]) {
 		{ 'h', "help", false },
 		{ 'v', "version", false },
 		{ 'd', "date", true },
-		{ 'O', "overwrite", false }
+		{ 'O', "overwrite", false },
+		{ 't', "tz", true }
 	};
 
 	for (Arg* arg = args; (*arg)[0] || (*arg)[1]; arg++) {
@@ -191,6 +194,9 @@ int main(int argc, char* argv[]) {
 							break;
 						case 'O':
 							opts.overwrite = true;
+							break;
+						case 't':
+							opts.time_offset = (int)(3600.0 * strtof((*arg)[1], NULL));
 							break;
 						default:
 							abort(); // unreachable
@@ -260,6 +266,7 @@ void usage(const char* argv0, const char* error) {
 		fputs("  -d, --date=FMT   Specify date format (or YYYY-MM-DD)\n", stderr);
 		fputs("  -h, --help       Print this help text\n", stderr);
 		fputs("  -O, --overwrite  Overwrite if the target exists\n", stderr);
+		fputs("  -t, --tz=HOURS   Time offset from UTC\n", stderr);
 		fputs("  -v, --version    Print version information\n", stderr);
 
 		fputs("\n", stderr);
@@ -339,7 +346,7 @@ void copy(const char* src_path, const char* dest_path) {
 void run(Options opts) {
 	struct stat file;
 
-	time_t c_time = time(NULL);
+	time_t c_time = time(NULL) + opts.time_offset;
 	const struct tm* c_tm = gmtime(&c_time);
 
 	const char* ext = file_extension(opts.template);
