@@ -269,8 +269,11 @@ void copy(const char* src_path, const char* dest_path) {
 	char buf[4096];
 	ssize_t n;
 
+	struct stat file;
+	stat(src_path, &file);
+
 	int src = open(src_path, O_RDONLY);
-	int dest = open(dest_path, O_WRONLY | O_CREAT);
+	int dest = open(dest_path, O_WRONLY | O_CREAT, file.st_mode);
 
 	while ((n = read(src, buf, 4096)) > 0) {
 		if (write(dest, buf, n) == -1) {
