@@ -148,9 +148,21 @@ int main(int argc, char* argv[]) {
 					) ||
 					strcmp((*arg)[0], options[i].flag_long) == 0
 				) {
-					if (((*arg)[1] == NULL) == options[i].value) {
-						usage(argv0, "argument value mismatch");
+					if ((*arg)[1] != NULL && !options[i].value) {
+						usage(argv0, "unexpected argument value");
 						exit(EXIT_FAILURE);
+					}
+
+					bool consumed = false;
+
+					if ((*arg)[1] == NULL && options[i].value) {
+						if ((*(arg + 1))[0] == NULL && (*(arg + 1))[1] != NULL) {
+							(*arg)[1] = (*(arg + 1))[1];
+							consumed = true;
+						} else {
+							usage(argv0, "argument value missing");
+							exit(EXIT_FAILURE);
+						}
 					}
 
 					if (options[i].present) {
@@ -173,6 +185,8 @@ int main(int argc, char* argv[]) {
 						default:
 							abort(); // unreachable
 					}
+
+					if (consumed) arg++;
 
 					goto next;
 				}
