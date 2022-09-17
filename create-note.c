@@ -1,7 +1,13 @@
+#include <errno.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
 
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
@@ -105,7 +111,12 @@ int main(int argc, char* argv[]) {
 	int n_outputs = 0;
 
 	bool help = false;
-	Options opts = { 0 };
+	Options opts = {
+		.template = NULL,
+		.outputs = NULL,
+		.date_fmt = "%Y-%m-%d",
+		.overwrite = false,
+	};
 
 	struct {
 		char flag_short;
@@ -236,5 +247,100 @@ void usage(const char* argv0, const char* error) {
 		fputs("  %S  Two-digit second number\n", stderr);
 		fputs("  %P  AM or PM marker\n", stderr);
 		fputs("Non-symbol characters are just copied over.\n", stderr);
+	}
+}
+
+const char* file_name(const char* path) {
+	// return file name part of path
+
+	char* file = strrchr(path, '/');
+	return file == NULL ? path : file + 1;
+}
+
+const char* file_extension(const char* path) {
+	// return extension part of path with "."
+
+	const char* file = file_name(path);
+	char* ext = strrchr(file, '.');
+	return ext == file ? NULL : ext;
+}
+
+void copy(const char* src_path, const char* dest_path) {
+	char buf[4096];
+	ssize_t n;
+
+	int src = open(src_path, O_RDONLY);
+	int dest = open(dest_path, O_WRONLY | O_CREAT);
+
+	while ((n = read(src, buf, 4096)) > 0) {
+		if (write(dest, buf, n) == -1) {
+			n = -1;
+			break;
+		}
+	}
+
+	if (n == -1) {
+		usage(argv0, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+}
+
+void run(Options opts) {
+	struct stat file;
+
+	time_t c_time = time(NULL);
+	const struct tm* c_tm = gmtime(&c_time);
+
+	const char* ext = file_extension(opts.template);
+	if (ext == NULL) ext = "";
+	size_t ext_len = strlen(ext);
+
+	if (ext_len > 1023) {
+		usage(argv0, "file extension is too long");
+		exit(EXIT_FAILURE);
+	}
+
+	char* default_name = calloc(1024, sizeof(char));
+
+	size_t name_len = strftime(default_name, 1023 - ext_len, opts.date_fmt, c_tm);
+	strcpy(default_name + name_len, ext);
+
+	if (stat(opts.template, &file) == -1) {
+		usage(argv0, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	char** output = opts.outputs;
+	for (; *output != NULL; output++) {
+		if (stat(*output, &file) == 0) {
+			if (S_ISDIR(file.st_mode)) {
+				size_t dest_len = strlen(*output) + 1 + strlen(default_name);
+				char* dest = calloc(dest_len + 1, sizeof(char));
+
+				char* slash = (*output)[strlen(*output) - 1] != '/' ? "/" : "";
+				snprintf(dest, dest_len, "%s%s%s", *output, slash, default_name);
+
+				copy(opts.template, dest);
+			} else if (opts.overwrite) {
+				copy(opts.template, *output);
+			} else {
+				usage(argv0, "target already exists");
+				exit(EXIT_FAILURE);
+			}
+		} else if (errno == ENOENT) {
+			copy(opts.template, *output);
+		} else {
+			usage(argv0, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	if (output == opts.outputs) {
+		if (stat(default_name, &file) == 0 && !opts.overwrite) {
+			usage(argv0, "default target already exists");
+			exit(EXIT_FAILURE);
+		} else {
+			copy(opts.template, default_name);
+		}
 	}
 }
