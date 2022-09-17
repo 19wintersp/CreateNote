@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
 		{ 'h', "help", false },
 		{ 'v', "version", false },
 		{ 'd', "date", true },
-		{ 'o', "overwrite", false }
+		{ 'O', "overwrite", false }
 	};
 
 	for (Arg* arg = args; (*arg)[0] || (*arg)[1]; arg++) {
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
 						case 'd':
 							opts.date_fmt = (*arg)[1];
 							break;
-						case 'o':
+						case 'O':
 							opts.overwrite = true;
 							break;
 						default:
@@ -259,7 +259,7 @@ void usage(const char* argv0, const char* error) {
 		fputs("You can modify the program with these options:\n", stderr);
 		fputs("  -d, --date=FMT   Specify date format (or YYYY-MM-DD)\n", stderr);
 		fputs("  -h, --help       Print this help text\n", stderr);
-		fputs("  -o, --overwrite  Overwrite if the target exists\n", stderr);
+		fputs("  -O, --overwrite  Overwrite if the target exists\n", stderr);
 		fputs("  -v, --version    Print version information\n", stderr);
 
 		fputs("\n", stderr);
