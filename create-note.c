@@ -283,6 +283,9 @@ void copy(const char* src_path, const char* dest_path) {
 		usage(argv0, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+
+	close(src);
+	close(dest);
 }
 
 void run(Options opts) {
