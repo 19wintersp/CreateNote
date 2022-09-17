@@ -12,7 +12,6 @@ typedef struct {
 	char** outputs;
 
 	char* date_fmt;
-	bool force_file;
 	bool overwrite;
 } Options;
 typedef char* Arg[2];
@@ -116,7 +115,6 @@ int main(int argc, char* argv[]) {
 	} options[] = {
 		{ 'h', "help", false },
 		{ 'd', "date", true },
-		{ 'f', "file", false },
 		{ 'o', "overwrite", false }
 	};
 
@@ -157,9 +155,6 @@ int main(int argc, char* argv[]) {
 							break;
 						case 'd':
 							opts.date_fmt = (*arg)[1];
-							break;
-						case 'f':
-							opts.force_file = true;
 							break;
 						case 'o':
 							opts.overwrite = true;
@@ -216,13 +211,12 @@ void usage(const char* argv0, const char* error) {
 
 		fputs("If OUTPUT is not specified, today's date is used.\n", stderr);
 		fputs("If OUTPUT is a folder, the default name is used within.\n", stderr);
-		fputs("If OUTPUT has no extension, it is created as a folder.\n", stderr);
+		fputs("If OUTPUT ends with '/', it is created as a folder.\n", stderr);
 
 		fputs("\n", stderr);
 
 		fputs("You can modify the program with these options:\n", stderr);
 		fputs("  -d, --date=FMT   Specify date format (or YYYY-MM-DD)\n", stderr);
-		fputs("  -f, --file       Never assume OUTPUT is a folder\n", stderr);
 		fputs("  -o, --overwrite  Overwrite if the target exists\n", stderr);
 
 		fputs("\n", stderr);
