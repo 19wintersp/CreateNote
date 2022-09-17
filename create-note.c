@@ -11,6 +11,11 @@
 
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
+#define PROGRAM_VERSION "0.1.0"
+#ifndef PROGRAM_NAME
+#define PROGRAM_NAME    "create-note"
+#endif
+
 // pre-definitions
 
 typedef struct {
@@ -111,6 +116,7 @@ int main(int argc, char* argv[]) {
 	int n_outputs = 0;
 
 	bool help = false;
+	bool version = false;
 	Options opts = {
 		.template = NULL,
 		.outputs = NULL,
@@ -125,6 +131,7 @@ int main(int argc, char* argv[]) {
 		bool present;
 	} options[] = {
 		{ 'h', "help", false },
+		{ 'v', "version", false },
 		{ 'd', "date", true },
 		{ 'o', "overwrite", false }
 	};
@@ -176,6 +183,9 @@ int main(int argc, char* argv[]) {
 						case 'h':
 							help = true;
 							break;
+						case 'v':
+							version = true;
+							break;
 						case 'd':
 							opts.date_fmt = (*arg)[1];
 							break;
@@ -206,6 +216,13 @@ int main(int argc, char* argv[]) {
 
 	if (help) {
 		usage(argv0, NULL);
+	} else if (version) {
+		fprintf(stderr, "%s v%s\n", PROGRAM_NAME, PROGRAM_VERSION);
+
+		fputs("\n", stderr);
+
+		fputs("Written by 19wintersp for Replit task 004.\n", stderr);
+		fputs("Licensed under the MIT licence.\n", stderr);
 	} else if (template != NULL) {
 		run(opts);
 	} else {
@@ -220,7 +237,7 @@ void usage(const char* argv0, const char* error) {
 	// print error or help with usage
 	
 	if (argv0 == NULL)
-		argv0 = "create-note";
+		argv0 = PROGRAM_NAME;
 
 	if (error != NULL)
 		fprintf(stderr, "%s: %s\n", argv0, error);
@@ -243,6 +260,7 @@ void usage(const char* argv0, const char* error) {
 		fputs("  -d, --date=FMT   Specify date format (or YYYY-MM-DD)\n", stderr);
 		fputs("  -h, --help       Print this help text\n", stderr);
 		fputs("  -o, --overwrite  Overwrite if the target exists\n", stderr);
+		fputs("  -v, --version    Print version information\n", stderr);
 
 		fputs("\n", stderr);
 
@@ -269,11 +287,6 @@ void usage(const char* argv0, const char* error) {
 			"The program exits with %d on success, or %d on failure.\n",
 			EXIT_SUCCESS, EXIT_FAILURE
 		);
-
-		fputs("\n", stderr);
-
-		fputs("This program was written by 19wintersp for Replit Tasks.\n", stderr);
-		fputs("Licensed under the MIT licence.\n", stderr);
 	}
 }
 

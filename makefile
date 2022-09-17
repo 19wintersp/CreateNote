@@ -9,5 +9,5 @@ BIN = $(NAME)
 .DEFAULT: $(BIN)
 
 $(BIN): $(SRC)
-	$(CC) -O3 $< -o $@
+	$(CC) -O3 -D 'PROGRAM_NAME="$(NAME)"' $< -o $@
 	strip create-note
