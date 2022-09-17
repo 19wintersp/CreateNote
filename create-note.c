@@ -275,6 +275,11 @@ void copy(const char* src_path, const char* dest_path) {
 	int src = open(src_path, O_RDONLY);
 	int dest = open(dest_path, O_WRONLY | O_CREAT, file.st_mode);
 
+	if (src == -1 || dest == -1) {
+		usage(argv0, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
 	while ((n = read(src, buf, 4096)) > 0) {
 		if (write(dest, buf, n) == -1) {
 			n = -1;
