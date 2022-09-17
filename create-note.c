@@ -236,12 +236,12 @@ void usage(const char* argv0, const char* error) {
 
 		fputs("If OUTPUT is not specified, today's date is used.\n", stderr);
 		fputs("If OUTPUT is a folder, the default name is used within.\n", stderr);
-		fputs("If OUTPUT ends with '/', it is created as a folder.\n", stderr);
 
 		fputs("\n", stderr);
 
 		fputs("You can modify the program with these options:\n", stderr);
 		fputs("  -d, --date=FMT   Specify date format (or YYYY-MM-DD)\n", stderr);
+		fputs("  -h, --help       Print this help text\n", stderr);
 		fputs("  -o, --overwrite  Overwrite if the target exists\n", stderr);
 
 		fputs("\n", stderr);
@@ -261,6 +261,19 @@ void usage(const char* argv0, const char* error) {
 		fputs("  %S  Two-digit second number\n", stderr);
 		fputs("  %P  AM or PM marker\n", stderr);
 		fputs("Non-symbol characters are just copied over.\n", stderr);
+
+		fputs("\n", stderr);
+
+		fprintf(
+			stderr,
+			"The program exits with %d on success, or %d on failure.\n",
+			EXIT_SUCCESS, EXIT_FAILURE
+		);
+
+		fputs("\n", stderr);
+
+		fputs("This program was written by 19wintersp for Replit Tasks.\n", stderr);
+		fputs("Licensed under the MIT licence.\n", stderr);
 	}
 }
 
