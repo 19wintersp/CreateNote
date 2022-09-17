@@ -329,7 +329,7 @@ void run(Options opts) {
 				char* dest = calloc(dest_len + 1, sizeof(char));
 
 				char* slash = (*output)[strlen(*output) - 1] != '/' ? "/" : "";
-				snprintf(dest, dest_len, "%s%s%s", *output, slash, default_name);
+				snprintf(dest, dest_len + 1, "%s%s%s", *output, slash, default_name);
 
 				copy(opts.template, dest);
 			} else if (opts.overwrite) {
