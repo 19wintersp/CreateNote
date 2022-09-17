@@ -132,9 +132,9 @@ int main(int argc, char* argv[]) {
 	for (Arg* arg = args; (*arg)[0] || (*arg)[1]; arg++) {
 		if ((*arg)[0] == NULL) {
 			if (template == NULL) {
-				template = (*arg)[0];
+				template = (*arg)[1];
 			} else {
-				outputs[n_outputs++] = (*arg)[0];
+				outputs[n_outputs++] = (*arg)[1];
 				if (n_outputs % 8 == 0)
 					outputs = realloc(outputs, (n_outputs + 8) * sizeof(char*));
 				outputs[n_outputs] = NULL;
