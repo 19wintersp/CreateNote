@@ -269,7 +269,7 @@ void usage(const char* argv0, const char* error) {
 		fputs("\n", stderr);
 
 		fputs("You can modify the program with these options:\n", stderr);
-		fputs("  -d, --date=FMT   Specify date format (or YYYY-MM-DD)\n", stderr);
+		fputs("  -d, --date=FMT   Specify date format (or local)\n", stderr);
 		fputs("  -h, --help       Print this help text\n", stderr);
 		fputs("  -n, --name=FMT   Specify name format (or YYYY-MM-DD)\n", stderr);
 		fputs("  -O, --overwrite  Overwrite if the target exists\n", stderr);
