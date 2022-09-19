@@ -397,8 +397,20 @@ void run(Options opts) {
 
 	if (output == opts.outputs) {
 		if (stat(default_name, &file) == 0 && !opts.overwrite) {
-			usage(argv0, "default target already exists");
-			exit(EXIT_FAILURE);
+			char* incremented_name;
+			unsigned int i = 0;
+
+			do {
+				i++;
+
+				if (incremented_name != NULL) free(incremented_name);
+
+				size_t length = snprintf(NULL, 0, "%s-%u%s", time, i, ext);
+				incremented_name = calloc(length + 1, sizeof(char));
+				snprintf(incremented_name, length + 1, "%s-%u%s", time, i, ext);
+			} while (stat(incremented_name, &file) == 0);
+
+			copy(opts.template, incremented_name);
 		} else {
 			copy(opts.template, default_name);
 		}
