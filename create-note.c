@@ -349,6 +349,10 @@ void run(Options opts) {
 	time_t c_time = time(NULL) + opts.time_offset;
 	const struct tm* c_tm = gmtime(&c_time);
 
+	size_t time_len = strftime(NULL, -1, opts.date_fmt, c_tm); // ub?
+	char* time = calloc(time_len + 1, sizeof(char));
+	strftime(time, time_len + 1, opts.date_fmt, c_tm);
+
 	const char* ext = file_extension(opts.template);
 	if (ext == NULL) ext = "";
 	size_t ext_len = strlen(ext);
@@ -358,10 +362,8 @@ void run(Options opts) {
 		exit(EXIT_FAILURE);
 	}
 
-	char* default_name = calloc(1024, sizeof(char));
-
-	size_t name_len = strftime(default_name, 1023 - ext_len, opts.date_fmt, c_tm);
-	strcpy(default_name + name_len, ext);
+	char* default_name = calloc(time_len + ext_len + 1, sizeof(char));
+	snprintf(default_name, time_len + ext_len + 1, "%s%s", time, ext);
 
 	if (stat(opts.template, &file) == -1) {
 		usage(argv0, strerror(errno));
