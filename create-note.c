@@ -11,7 +11,7 @@
 
 #define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
-#define PROGRAM_VERSION "0.1.1"
+#define PROGRAM_VERSION "0.2.0"
 #ifndef PROGRAM_NAME
 #define PROGRAM_NAME    "create-note"
 #endif
