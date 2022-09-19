@@ -23,6 +23,7 @@ typedef struct {
 	char** outputs;
 
 	char* date_fmt;
+	char* name_fmt;
 	bool overwrite;
 	int time_offset;
 } Options;
@@ -121,7 +122,8 @@ int main(int argc, char* argv[]) {
 	Options opts = {
 		.template = NULL,
 		.outputs = NULL,
-		.date_fmt = "%Y-%m-%d",
+		.date_fmt = "%x",
+		.name_fmt = "%Y-%m-%d",
 		.overwrite = false,
 		.time_offset = 0
 	};
@@ -135,6 +137,7 @@ int main(int argc, char* argv[]) {
 		{ 'h', "help", false },
 		{ 'v', "version", false },
 		{ 'd', "date", true },
+		{ 'n', "name", true },
 		{ 'O', "overwrite", false },
 		{ 't', "tz", true }
 	};
@@ -191,6 +194,9 @@ int main(int argc, char* argv[]) {
 							break;
 						case 'd':
 							opts.date_fmt = (*arg)[1];
+							break;
+						case 'n':
+							opts.name_fmt = (*arg)[1];
 							break;
 						case 'O':
 							opts.overwrite = true;
@@ -265,6 +271,7 @@ void usage(const char* argv0, const char* error) {
 		fputs("You can modify the program with these options:\n", stderr);
 		fputs("  -d, --date=FMT   Specify date format (or YYYY-MM-DD)\n", stderr);
 		fputs("  -h, --help       Print this help text\n", stderr);
+		fputs("  -n, --name=FMT   Specify name format (or YYYY-MM-DD)\n", stderr);
 		fputs("  -O, --overwrite  Overwrite if the target exists\n", stderr);
 		fputs("  -t, --tz=HOURS   Time offset from UTC\n", stderr);
 		fputs("  -v, --version    Print version information\n", stderr);
@@ -349,9 +356,9 @@ void run(Options opts) {
 	time_t c_time = time(NULL) + opts.time_offset;
 	const struct tm* c_tm = gmtime(&c_time);
 
-	size_t time_len = strftime(NULL, -1, opts.date_fmt, c_tm); // ub?
+	size_t time_len = strftime(NULL, -1, opts.name_fmt, c_tm); // ub?
 	char* time = calloc(time_len + 1, sizeof(char));
-	strftime(time, time_len + 1, opts.date_fmt, c_tm);
+	strftime(time, time_len + 1, opts.name_fmt, c_tm);
 
 	const char* ext = file_extension(opts.template);
 	if (ext == NULL) ext = "";
