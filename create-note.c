@@ -16,6 +16,8 @@
 #define PROGRAM_NAME    "create-note"
 #endif
 
+#define DATE_TAG "{{TODAY}}"
+
 // pre-definitions
 
 typedef struct {
@@ -319,10 +321,7 @@ const char* file_extension(const char* path) {
 	return ext == file ? NULL : ext;
 }
 
-void copy(const char* src_path, const char* dest_path) {
-	char buf[4096];
-	ssize_t n;
-
+void copy(const char* src_path, const char* dest_path, const char* date) {
 	struct stat file;
 	stat(src_path, &file);
 
@@ -334,14 +333,34 @@ void copy(const char* src_path, const char* dest_path) {
 		exit(EXIT_FAILURE);
 	}
 
-	while ((n = read(src, buf, 4096)) > 0) {
-		if (write(dest, buf, n) == -1) {
-			n = -1;
-			break;
-		}
+	// loading the whole file into memory is painfully inefficient (I would prefer
+	// to use a streaming replacement) but it's easier and faster, and the memory
+	// usage of a program of this sort isn't a great concern.
+
+	char* buf = malloc(file.st_size + 1);
+	buf[file.st_size] = 0;
+
+	ssize_t n, sum = 0;
+
+	while ((n = read(src, buf + sum, 4096)) > 0) sum += n;
+	if (n == -1) goto copy_error;
+
+	char* ptr = buf;
+
+	for (;;) {
+		char* tag = strstr(ptr, DATE_TAG);
+		if (tag == NULL) break;
+
+		if (write(dest, ptr, tag - ptr) == -1) goto copy_error;
+		if (write(dest, date, strlen(date)) == -1) goto copy_error;
+
+		ptr = tag + strlen(DATE_TAG);
 	}
 
+	n = write(dest, ptr, strlen(ptr));
+
 	if (n == -1) {
+copy_error:
 		usage(argv0, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -355,6 +374,10 @@ void run(Options opts) {
 
 	time_t c_time = time(NULL) + opts.time_offset;
 	const struct tm* c_tm = gmtime(&c_time);
+
+	size_t date_len = strftime(NULL, -1, opts.date_fmt, c_tm); // ub?
+	char* date = calloc(date_len + 1, sizeof(char));
+	strftime(date, date_len + 1, opts.date_fmt, c_tm);
 
 	size_t time_len = strftime(NULL, -1, opts.name_fmt, c_tm); // ub?
 	char* time = calloc(time_len + 1, sizeof(char));
@@ -387,15 +410,15 @@ void run(Options opts) {
 				char* slash = (*output)[strlen(*output) - 1] != '/' ? "/" : "";
 				snprintf(dest, dest_len + 1, "%s%s%s", *output, slash, default_name);
 
-				copy(opts.template, dest);
+				copy(opts.template, dest, date);
 			} else if (opts.overwrite) {
-				copy(opts.template, *output);
+				copy(opts.template, *output, date);
 			} else {
 				usage(argv0, "target already exists");
 				exit(EXIT_FAILURE);
 			}
 		} else if (errno == ENOENT) {
-			copy(opts.template, *output);
+			copy(opts.template, *output, date);
 		} else {
 			usage(argv0, strerror(errno));
 			exit(EXIT_FAILURE);
@@ -417,9 +440,9 @@ void run(Options opts) {
 				snprintf(incremented_name, length + 1, "%s-%u%s", time, i, ext);
 			} while (stat(incremented_name, &file) == 0);
 
-			copy(opts.template, incremented_name);
+			copy(opts.template, incremented_name, date);
 		} else {
-			copy(opts.template, default_name);
+			copy(opts.template, default_name, date);
 		}
 	}
 }
